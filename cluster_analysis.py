@@ -1,28 +1,33 @@
 from sklearn.cluster import KMeans
 from sklearn.cluster import SpectralClustering
 from sklearn.cluster import AgglomerativeClustering
+from sklearn.cluster import BisectingKMeans
 import pandas as pd
-
+pd.set_option('display.max_columns',10)
 
 class ClusterAnalysis:
     labels = []
     data_frame = pd.DataFrame()
 
-    def __init__(self, data, number_of_clusters=2, method="kmeans", labels=0):
+    def __init__(self, data = 'iris.csv', number_of_clusters=2, method="kmeans", labels=0, separator = ';'):
         self.data = data
         self.number_of_clusters = number_of_clusters
         self.method = method
         self.labels = labels
+        self.separator = separator
+        self.label_column = None
 
-        self.make_labels(data, number_of_clusters, method, labels)
+        self.make_labels(data, number_of_clusters, method, labels, separator)
         self.whole_data_frame(self.data)
 
-    def make_labels(self, data, number_of_clusters, method, labels):
+    def make_labels(self, data, number_of_clusters, method, labels, separator):
 
-        self.data = pd.read_csv(data, sep=";")
+        self.data = pd.read_csv(data, sep=separator)
 
         if labels:
+            self.label_column = self.data.iloc[:,0]
             self.data = self.data.drop(self.data.columns[[0]], axis=1)
+
 
         self.data = self.numeric_and_categorical()
         self.change_method(method, number_of_clusters)
@@ -32,8 +37,16 @@ class ClusterAnalysis:
             self.labels = KMeans(n_clusters=number_of_clusters, random_state=0).fit(self.data)
         elif method == "spectral_clustering":
             self.labels = SpectralClustering(n_clusters=number_of_clusters, random_state=0).fit(self.data)
-        elif method == "agglomerative_clustering":
-            self.labels = AgglomerativeClustering().fit(self.data)
+        elif method == "agglomerate_ward":
+            self.labels = AgglomerativeClustering(n_clusters=number_of_clusters, linkage="ward").fit(self.data)
+        elif method == "agglomerate_average":
+            self.labels = AgglomerativeClustering(n_clusters=number_of_clusters, linkage="average").fit(self.data)
+        elif method == "agglomerate_complete":
+            self.labels = AgglomerativeClustering(n_clusters=number_of_clusters, linkage="complete").fit(self.data)
+        elif method == "agglomerate_single":
+            self.labels = AgglomerativeClustering(n_clusters=number_of_clusters, linkage="single").fit(self.data)
+        elif method == "kmeans_bisecting":
+            self.labels = BisectingKMeans(n_clusters=number_of_clusters, random_state=0).fit(self.data)
 
     def numeric_and_categorical(self):
 
@@ -60,7 +73,8 @@ class ClusterAnalysis:
     def whole_data_frame(self, data):
         labels = list(self.labels.labels_)
         labels = pd.DataFrame(labels, columns=["cluster"])
-        self.data_frame = pd.concat([data, labels], axis=1)
+        self.data_frame = pd.concat([self.label_column,data, labels], axis=1)
+        self.data_frame = self.data_frame.sort_values(by=["cluster"])
 
     @staticmethod
     def original_values(data):
@@ -80,5 +94,4 @@ class ClusterAnalysis:
         return data
 
 
-c = ClusterAnalysis('iris.csv', 3, "kmeans", 1)
-print(c.data_frame)
+c = ClusterAnalysis('2021.csv', 3, 'agglomerate_complete', 1, ';')
