@@ -2,6 +2,7 @@ from sklearn.cluster import KMeans
 from sklearn.cluster import SpectralClustering
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.cluster import BisectingKMeans
+from sklearn.cluster import DBSCAN
 import pandas as pd
 pd.set_option('display.max_columns',10)
 
@@ -47,6 +48,8 @@ class ClusterAnalysis:
             self.labels = AgglomerativeClustering(n_clusters=number_of_clusters, linkage="single").fit(self.data)
         elif method == "kmeans_bisecting":
             self.labels = BisectingKMeans(n_clusters=number_of_clusters, random_state=0).fit(self.data)
+        elif method == "dbscan":
+            self.labels = DBSCAN(min_samples=number_of_clusters).fit(self.data)
 
     def numeric_and_categorical(self):
 

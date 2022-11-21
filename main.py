@@ -11,7 +11,6 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=UserWarning)
 
 
-
 class App:
 
     def __init__(self, master):
@@ -32,7 +31,7 @@ class App:
         self.text_separator = Label(master, text="Choose separator")
         self.open_button = Button(
             master,
-            text='Open a File',
+            text='Open a file',
             command=self.file_select
         )
 
@@ -47,6 +46,12 @@ class App:
             master,
             text='Choose method',
             command=self.display_methods
+        )
+
+        self.save_to_file_button = Button(
+            master,
+            text='Save to file',
+            command=self.save_to_file
         )
 
         self.check_label = Checkbutton(
@@ -73,15 +78,26 @@ class App:
     def extract_number(self,text):
         self.chosen_method = re.findall(r'\d+', text)[0]
 
+    def save_to_file(self):
+        self.check_number()
+        cluster_object = cluster_analysis.ClusterAnalysis(self.filename, int(self.number),
+                                                          cluster_methods.selected_method[int(self.chosen_method)],
+                                                          self.if_label.get(), self.separators.get())
+        filename = filedialog.asksaveasfilename(filetypes=[("CSV", "*.csv")], defaultextension="*.csv")
+        if filename:
+            with open(filename, "w", -1, "utf-8") as file:
+                cluster_object.data_frame.to_csv(file, sep=self.separators.get(), index=False)
+
     def packed(self):
         self.open_button.place(x=270, y=10)
-        self.show_button.place(x=250, y=250)
+        self.show_button.place(x=250, y=210)
         self.text_number_of_clusters.place(x=200, y=50)
         self.number_of_clusters.place(x=350, y=50)
         self.check_label.place(x=230, y=80)
         self.text_separator.place(x=250, y=110)
         self.check_separator.place(x=275, y=130)
-        self.display_methods_button.place(x=250, y=170)
+        self.save_to_file_button.place(x=265, y=260)
+        self.display_methods_button.place(x=250, y=175)
 
     def check_number(self):
         if self.number_of_clusters.get().isnumeric():
@@ -116,18 +132,21 @@ class App:
         pt.show()
 
     def show_selected(self,tv):
-        self.extract_number(str(tv.selection()))
+        try:
+            self.extract_number(str(tv.selection()))
+        except IndexError:
+            pass
 
     def show_method(self):
         new_window = Toplevel(self.master)
         frame = Frame(new_window)
-        new_window.title("Choose method")
+        new_window.title("Clustering methods")
         frame.pack(fill='both', expand=True)
         tv = ttk.Treeview(
             frame,
             columns=(1, 2),
             show='headings',
-            height=6
+            height=8
         )
         tv.heading(1, text='Method')
         tv.heading(2, text='Usecase')
@@ -138,9 +157,21 @@ class App:
                                                      cluster_methods.methods_description[0]))
         tv.insert(parent='', index=1, iid=1, values=(cluster_methods.methods_names[1],
                                                      cluster_methods.methods_description[1]))
+        tv.insert(parent='', index=2, iid=2, values=(cluster_methods.methods_names[2],
+                                                     cluster_methods.methods_description[2]))
+        tv.insert(parent='', index=3, iid=3, values=(cluster_methods.methods_names[3],
+                                                     cluster_methods.methods_description[3])),
+        tv.insert(parent='', index=4, iid=4, values=(cluster_methods.methods_names[4],
+                                                     cluster_methods.methods_description[4])),
+        tv.insert(parent='', index=5, iid=5, values=(cluster_methods.methods_names[5],
+                                                     cluster_methods.methods_description[5]))
+        tv.insert(parent='', index=6, iid=6, values=(cluster_methods.methods_names[6],
+                                                     cluster_methods.methods_description[6]))
+        tv.insert(parent='', index=7, iid=7, values=(cluster_methods.methods_names[7],
+                                                     cluster_methods.methods_description[7]))
 
 
-        Button(new_window, text="Show Selected", command=lambda:self.show_selected(tv)).pack()
+        Button(new_window, text="Choose method", command=lambda:[self.show_selected(tv), new_window.destroy()]).pack()
         tv.pack()
 
     def display_methods(self):
