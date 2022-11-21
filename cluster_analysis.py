@@ -25,7 +25,7 @@ class ClusterAnalysis:
         self.data = pd.read_csv(data, sep=separator)
 
         if labels:
-            self.label_column = self.data.iloc[:,0]
+            self.label_column = self.data.iloc[:, 0]
             self.data = self.data.drop(self.data.columns[[0]], axis=1)
 
 
@@ -50,19 +50,19 @@ class ClusterAnalysis:
 
     def numeric_and_categorical(self):
 
-        data_numeric = pd.DataFrame(self.data)
         data_categorical = pd.DataFrame(self.data)
+        data_numeric = pd.DataFrame(self.data)
 
-        for i in data_numeric._get_numeric_data().columns.values.tolist():
-            del data_numeric[i]
-
-        for i in data_numeric:
+        for i in data_categorical._get_numeric_data().columns.values.tolist():
             del data_categorical[i]
 
-        data_numeric = self.coding_categorical(data_numeric)
-        data_categorical = data_categorical.join(data_numeric)
+        for i in data_categorical:
+            del data_numeric[i]
 
-        return data_categorical
+        data_categorical = self.coding_categorical(data_categorical)
+        data_numeric = data_numeric.join(data_categorical)
+
+        return data_numeric
 
     def coding_categorical(self, data):
 
