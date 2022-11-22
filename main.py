@@ -48,7 +48,7 @@ class App:
         self.display_methods_button = Button(
             master,
             text='Choose method',
-            command=self.display_methods
+            command=self.show_method
         )
 
         self.visualize_button = Button(
@@ -114,7 +114,7 @@ class App:
         tv.heading(1, text='Number of cluster')
         for i in range(int(self.number)):
             tv.insert(parent='', index=i, iid=i, values=i)
-        Button(new_window, text="Choose method", command=lambda: [self.choose_cluster(tv), new_window.destroy()]).pack()
+        Button(new_window, text="Choose cluster", command=lambda: [self.choose_cluster(tv), new_window.destroy()]).pack()
         tv.pack()
 
     @staticmethod
@@ -208,30 +208,12 @@ class App:
         tv.column(1, minwidth=0, width=150, stretch=NO)
         tv.column(2, minwidth=0, width=900, stretch=YES)
 
-        tv.insert(parent='', index=0, iid=0, values=(cluster_methods.methods_names[0],
-                                                     cluster_methods.methods_description[0]))
-        tv.insert(parent='', index=1, iid=1, values=(cluster_methods.methods_names[1],
-                                                     cluster_methods.methods_description[1]))
-        tv.insert(parent='', index=2, iid=2, values=(cluster_methods.methods_names[2],
-                                                     cluster_methods.methods_description[2]))
-        tv.insert(parent='', index=3, iid=3, values=(cluster_methods.methods_names[3],
-                                                     cluster_methods.methods_description[3])),
-        tv.insert(parent='', index=4, iid=4, values=(cluster_methods.methods_names[4],
-                                                     cluster_methods.methods_description[4])),
-        tv.insert(parent='', index=5, iid=5, values=(cluster_methods.methods_names[5],
-                                                     cluster_methods.methods_description[5]))
-        tv.insert(parent='', index=6, iid=6, values=(cluster_methods.methods_names[6],
-                                                     cluster_methods.methods_description[6]))
-        tv.insert(parent='', index=7, iid=7, values=(cluster_methods.methods_names[7],
-                                                     cluster_methods.methods_description[7]))
-        tv.insert(parent='', index=8, iid=8, values=(cluster_methods.methods_names[8],
-                                                     cluster_methods.methods_description[8]))
+        for i in range(8):
+            tv.insert(parent='', index=i, iid=i, values=(cluster_methods.methods_names[i],
+                                                     cluster_methods.methods_description[i]))
 
         Button(new_window, text="Choose method", command=lambda: [self.show_selected(tv), new_window.destroy()]).pack()
         tv.pack()
-
-    def display_methods(self):
-        self.show_method()
 
     def show(self):
         self.check_number()
