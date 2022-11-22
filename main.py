@@ -208,7 +208,7 @@ class App:
         tv.column(1, minwidth=0, width=150, stretch=NO)
         tv.column(2, minwidth=0, width=900, stretch=YES)
 
-        for i in range(8):
+        for i in range(9):
             tv.insert(parent='', index=i, iid=i, values=(cluster_methods.methods_names[i],
                                                      cluster_methods.methods_description[i]))
 
