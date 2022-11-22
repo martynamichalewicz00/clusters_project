@@ -6,7 +6,8 @@ selected_method = ["kmeans",
                    "agglomerate_complete",
                    "agglomerate_single",
                    "kmeans_bisecting",
-                   "dbscan"]
+                   "dbscan",
+                   "optics"]
 
 methods_description = ['General-purpose, even cluster size, flat geometry,not too many clusters, inductive.',
                        'Few clusters, even cluster size, non-flat geometry, transductive.',
@@ -21,7 +22,9 @@ methods_description = ['General-purpose, even cluster size, flat geometry,not to
                        'While K-Means clusterings are different when with increasing n_clusters, '
                        'Bisecting K-Means clustering build on top of the previous ones.',
                        'Non-flat geometry, uneven cluster sizes, outlier removal, transductive. '
-                       'Number of clusters is minimum number of clusters'
+                       'Number of clusters is minimum number of clusters',
+                       "Non-flat geometry, uneven cluster sizes, variable cluster density, "
+                       "outlier removal, transductive"
                        ]
 
 methods_names = ['K-Means',
@@ -31,4 +34,5 @@ methods_names = ['K-Means',
                  'Hierarchical average linkage',
                  'Hierarchical single linkage',
                  'K-Means bisecting',
-                 'DBSCAN']
+                 'DBSCAN',
+                 'OPTICS']

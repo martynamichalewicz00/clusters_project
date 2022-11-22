@@ -1,6 +1,7 @@
 import cluster_analysis
 import cluster_methods
 from tkinter import *
+import matplotlib.pyplot as plt
 from pandastable import Table
 from tkinter import filedialog
 from tkinter import ttk
@@ -15,20 +16,22 @@ class App:
 
     def __init__(self, master):
 
-        self.if_label, self.number = IntVar(), IntVar()
-        self.separators = StringVar()
-        self.chosen_method = 0
-
-        self.filename = None
         self.master = master
         self.master.title("Data Clustering")
-        self.master.geometry("600x300")
+        self.master.geometry("600x350")
         self.master.resizable(0, 0)
-        self.all_separators = [',', ';', '.']
+
+        self.if_label, self.number = IntVar(), IntVar()
+        self.separators = StringVar()
+        self.chosen_method, self.chosen_cluster = 0, 0
+        self.filename, self.cluster_object = None, None
+
+        self.all_separators = [',', ';', '.', '/']
         self.separators.set(self.all_separators[0])
 
         self.text_number_of_clusters = Label(master, text="Number of clusters")
         self.text_separator = Label(master, text="Choose separator")
+
         self.open_button = Button(
             master,
             text='Open a file',
@@ -48,10 +51,18 @@ class App:
             command=self.display_methods
         )
 
+        self.visualize_button = Button(
+            master,
+            text='Cluster details',
+            command=self.visualize,
+            state='disabled'
+        )
+
         self.save_to_file_button = Button(
             master,
             text='Save to file',
-            command=self.save_to_file
+            command=self.save_to_file,
+            state='disabled'
         )
 
         self.check_label = Checkbutton(
@@ -75,19 +86,6 @@ class App:
         self.packed()
         self.master.mainloop()
 
-    def extract_number(self,text):
-        self.chosen_method = re.findall(r'\d+', text)[0]
-
-    def save_to_file(self):
-        self.check_number()
-        cluster_object = cluster_analysis.ClusterAnalysis(self.filename, int(self.number),
-                                                          cluster_methods.selected_method[int(self.chosen_method)],
-                                                          self.if_label.get(), self.separators.get())
-        filename = filedialog.asksaveasfilename(filetypes=[("CSV", "*.csv")], defaultextension="*.csv")
-        if filename:
-            with open(filename, "w", -1, "utf-8") as file:
-                cluster_object.data_frame.to_csv(file, sep=self.separators.get(), index=False)
-
     def packed(self):
         self.open_button.place(x=270, y=10)
         self.show_button.place(x=250, y=210)
@@ -96,8 +94,64 @@ class App:
         self.check_label.place(x=230, y=80)
         self.text_separator.place(x=250, y=110)
         self.check_separator.place(x=275, y=130)
-        self.save_to_file_button.place(x=265, y=260)
+        self.save_to_file_button.place(x=265, y=300)
+        self.visualize_button.place(x=255, y=250)
         self.display_methods_button.place(x=250, y=175)
+
+    def visualize(self):
+        self.check_number()
+        self.read_cluster_object()
+        new_window = Toplevel(self.master)
+        frame = Frame(new_window)
+        new_window.title("Clustering methods")
+        frame.pack(fill='both', expand=True)
+        tv = ttk.Treeview(
+            frame,
+            columns=1,
+            show='headings'
+        )
+        tv.column(1, minwidth=0, width=150, stretch=NO)
+        tv.heading(1, text='Number of cluster')
+        for i in range(int(self.number)):
+            tv.insert(parent='', index=i, iid=i, values=i)
+        Button(new_window, text="Choose method", command=lambda: [self.choose_cluster(tv), new_window.destroy()]).pack()
+        tv.pack()
+
+    @staticmethod
+    def generate_plot(dataframe, number):
+        dataframe = dataframe.drop(dataframe.columns[[-1]], axis=1)
+        details = dataframe.mean(axis=0)
+        details.plot(kind='bar')
+        plt.title('Cluster no. ' + number)
+        plt.xlabel('', fontsize=10)
+        plt.show()
+
+    def choose_cluster(self, tv):
+        self.chosen_cluster = tv.focus()
+        self.plot_chosen_cluster(self.chosen_cluster, self.cluster_object.data_frame)
+
+    def plot_chosen_cluster(self, number_of_cluster, dataframe):
+        if self.if_label:
+            dataframe = dataframe.drop(dataframe.columns[[0]], axis=1)
+        dataframe = dataframe.astype(int)
+        dataframe_of_one_cluster = dataframe[dataframe['cluster'] == int(number_of_cluster)]
+        self.generate_plot(dataframe_of_one_cluster, number_of_cluster)
+
+    def extract_number(self, text):
+        self.chosen_method = re.findall(r'\d+', text)[0]
+
+    def read_cluster_object(self):
+        self.check_number()
+        self.cluster_object = cluster_analysis.ClusterAnalysis(self.filename, int(self.number),
+                                                               cluster_methods.selected_method[int(self.chosen_method)],
+                                                               self.if_label.get(), self.separators.get())
+
+    def save_to_file(self):
+        self.read_cluster_object()
+        filename = filedialog.asksaveasfilename(filetypes=[("CSV", "*.csv")], defaultextension="*.csv")
+        if filename:
+            with open(filename, "w", -1, "utf-8") as file:
+                self.cluster_object.data_frame.to_csv(file, sep=self.separators.get(), index=False)
 
     def check_number(self):
         if self.number_of_clusters.get().isnumeric():
@@ -111,7 +165,8 @@ class App:
                                                    filetypes=(("CSV files", "*.csv"),
                                                               ("all files", "*.*")))
         self.show_button.config(state="normal")
-
+        self.save_to_file_button.config(state="normal")
+        self.visualize_button.config(state="normal")
 
     def show_dataframe(self, cluster_object):
         new_window = Toplevel(self.master)
@@ -131,7 +186,7 @@ class App:
         new_window.geometry("600x600")
         pt.show()
 
-    def show_selected(self,tv):
+    def show_selected(self, tv):
         try:
             self.extract_number(str(tv.selection()))
         except IndexError:
@@ -146,7 +201,7 @@ class App:
             frame,
             columns=(1, 2),
             show='headings',
-            height=8
+            height=9
         )
         tv.heading(1, text='Method')
         tv.heading(2, text='Usecase')
@@ -169,9 +224,10 @@ class App:
                                                      cluster_methods.methods_description[6]))
         tv.insert(parent='', index=7, iid=7, values=(cluster_methods.methods_names[7],
                                                      cluster_methods.methods_description[7]))
+        tv.insert(parent='', index=8, iid=8, values=(cluster_methods.methods_names[8],
+                                                     cluster_methods.methods_description[8]))
 
-
-        Button(new_window, text="Choose method", command=lambda:[self.show_selected(tv), new_window.destroy()]).pack()
+        Button(new_window, text="Choose method", command=lambda: [self.show_selected(tv), new_window.destroy()]).pack()
         tv.pack()
 
     def display_methods(self):
@@ -179,9 +235,8 @@ class App:
 
     def show(self):
         self.check_number()
-        cluster_object = cluster_analysis.ClusterAnalysis(self.filename, int(self.number), cluster_methods.selected_method[int(self.chosen_method)],
-                                                          self.if_label.get(), self.separators.get())
-        self.show_dataframe(cluster_object.data_frame)
+        self.read_cluster_object()
+        self.show_dataframe(self.cluster_object.data_frame)
 
 
 if __name__ == "__main__":

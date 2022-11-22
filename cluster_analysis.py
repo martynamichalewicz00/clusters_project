@@ -3,14 +3,15 @@ from sklearn.cluster import SpectralClustering
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.cluster import BisectingKMeans
 from sklearn.cluster import DBSCAN
+from sklearn.cluster import OPTICS
 import pandas as pd
-pd.set_option('display.max_columns',10)
+
 
 class ClusterAnalysis:
     labels = []
     data_frame = pd.DataFrame()
 
-    def __init__(self, data = 'iris.csv', number_of_clusters=2, method="kmeans", labels=0, separator = ';'):
+    def __init__(self, data='iris.csv', number_of_clusters=2, method="kmeans", labels=0, separator=';'):
         self.data = data
         self.number_of_clusters = number_of_clusters
         self.method = method
@@ -23,12 +24,11 @@ class ClusterAnalysis:
 
     def make_labels(self, data, number_of_clusters, method, labels, separator):
 
-        self.data = pd.read_csv(data, sep=separator)
+        self.data = pd.read_csv(data, sep=separator, skipinitialspace=True)
 
         if labels:
             self.label_column = self.data.iloc[:, 0]
             self.data = self.data.drop(self.data.columns[[0]], axis=1)
-
 
         self.data = self.numeric_and_categorical()
         self.change_method(method, number_of_clusters)
@@ -50,6 +50,8 @@ class ClusterAnalysis:
             self.labels = BisectingKMeans(n_clusters=number_of_clusters, random_state=0).fit(self.data)
         elif method == "dbscan":
             self.labels = DBSCAN(min_samples=number_of_clusters).fit(self.data)
+        elif method == "optics":
+            self.labels = OPTICS(min_samples=number_of_clusters).fit(self.data)
 
     def numeric_and_categorical(self):
 
@@ -76,7 +78,7 @@ class ClusterAnalysis:
     def whole_data_frame(self, data):
         labels = list(self.labels.labels_)
         labels = pd.DataFrame(labels, columns=["cluster"])
-        self.data_frame = pd.concat([self.label_column,data, labels], axis=1)
+        self.data_frame = pd.concat([self.label_column, data, labels], axis=1)
         self.data_frame = self.data_frame.sort_values(by=["cluster"])
 
     @staticmethod
@@ -95,6 +97,3 @@ class ClusterAnalysis:
                 names_to_replace.append((original_values[i].index[j]))
             data = data.replace(names_to_replace, range(1, len(names_to_replace) + 1))
         return data
-
-
-c = ClusterAnalysis('2021.csv', 3, 'agglomerate_complete', 1, ';')
