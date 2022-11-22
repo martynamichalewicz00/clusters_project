@@ -1,6 +1,3 @@
-# data_clustering
-An application used to divide given dataset into clusters with one of the methods included in the sklearn module.
-
 # Data clustering
 
 A class-based application used to divide given dataset into clusters with one of the methods included in the sci-kit learn module.
