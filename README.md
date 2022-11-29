@@ -20,6 +20,7 @@ A class-based application used to divide given dataset into clusters with one of
 ## Run Locally
 
 ```bash
+pip install pandastable
 git clone https://github.com/martynamichalewicz00/data_clustering.git
 ```
 
