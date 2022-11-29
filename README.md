@@ -21,6 +21,7 @@ A class-based application used to divide given dataset into clusters with one of
 
 ```bash
 pip install pandastable
+pip install pyplot
 git clone https://github.com/martynamichalewicz00/data_clustering.git
 ```
 
